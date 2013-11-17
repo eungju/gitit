@@ -396,10 +396,19 @@ showActivity = withData $ \(params :: Params) -> do
                             then dropExtension file
                             else file
   base' <- getWikiBase
+  let fileViewUrl file = base' ++ urlForPage file
+  let fileRevisionViewUrl file rev = base' ++ urlForPage file ++ "?revision=" ++ rev
+  let fileDiffUrl file rev = base' ++ "/_diff" ++ urlForPage file ++ "?to=" ++ rev
   let fileAnchor revis file =
-        anchor ! [href $ base' ++ "/_diff" ++ urlForPage file ++ "?to=" ++ revis] << file
-  let filesFor changes revis = intersperse (primHtmlChar "nbsp") $
-        map (fileAnchor revis . dropDotPage . fileFromChange) changes
+        li << [
+          (anchor ! [href $ fileViewUrl file] << file),
+          stringToHtml " (",
+          (anchor ! [href $ fileRevisionViewUrl file revis] << "view"),
+          stringToHtml "|",
+          (anchor ! [href $ fileDiffUrl file revis] << "diff"),
+          stringToHtml ")"
+          ]
+  let filesFor changes revis = ulist ! [theclass "files"] << map (fileAnchor revis . dropDotPage . fileFromChange) changes
   let heading = h1 << ("Recent changes by " ++ fromMaybe "all users" forUser)
   let revToListItem rev = li <<
         [ thespan ! [theclass "date"] << (show $ revDateTime rev)
@@ -410,9 +419,7 @@ showActivity = withData $ \(params :: Params) -> do
                 (authorName $ revAuthor rev)
         , stringToHtml "): "
         , thespan ! [theclass "subject"] << revDescription rev
-        , stringToHtml " ("
-        , thespan ! [theclass "files"] << filesFor (revChanges rev) (revId rev)
-        , stringToHtml ")"
+        , filesFor (revChanges rev) (revId rev)
         ]
   let contents = ulist ! [theclass "history"] << map revToListItem hist'
   formattedPage defaultPageLayout{

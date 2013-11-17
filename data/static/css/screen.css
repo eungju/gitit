@@ -153,3 +153,9 @@ box-shadow: #555 0 0 10px;
 }
 /* Deal with multiple footnotes one after another; Charuru */
 sup + sup { margin-left: 2px; }
+
+
+ul.history ul.files {
+  list-style-type: none;
+  margin-top: 0em;
+}

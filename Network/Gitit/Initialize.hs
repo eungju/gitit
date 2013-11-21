@@ -38,7 +38,7 @@ import Paths_gitit (getDataFileName)
 import Control.Exception (throwIO, try)
 import System.Directory (copyFile, createDirectoryIfMissing, doesDirectoryExist, doesFileExist)
 import Control.Monad (unless, forM_, liftM)
-import Text.Pandoc
+import Text.Pandoc hiding (pandocExtensions)
 import System.Log.Logger (logM, Priority(..))
 import qualified Text.StringTemplate as T
 
@@ -119,15 +119,15 @@ createDefaultPages conf = do
     let fs = filestoreFromConfig conf
         pt = defaultPageType conf
         toPandoc = readMarkdown
-                   def{ readerSmart = True }
+                   def{ readerSmart = True, readerExtensions = pandocExtensions conf }
         defOpts = def{ writerStandalone = False
                      , writerHTMLMathMethod = JsMath
                               (Just "/js/jsMath/easy/load.js")
                      , writerExtensions = if showLHSBirdTracks conf
                                              then Set.insert
                                                   Ext_literate_haskell
-                                                  $ writerExtensions def
-                                             else writerExtensions def
+                                                  $ pandocExtensions conf
+                                             else pandocExtensions conf
                      }
         -- note: we convert this (markdown) to the default page format
         converter = case pt of

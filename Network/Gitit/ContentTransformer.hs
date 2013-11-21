@@ -88,7 +88,7 @@ import System.FilePath
 import qualified Text.Pandoc.Builder as B
 import Text.HTML.SanitizeXSS (sanitizeBalance)
 import Text.Highlighting.Kate
-import Text.Pandoc hiding (MathML, WebTeX, MathJax)
+import Text.Pandoc hiding (MathML, WebTeX, MathJax, pandocExtensions)
 import Text.XHtml hiding ( (</>), dir, method, password, rev )
 #if MIN_VERSION_blaze_html(0,5,0)
 import Text.Blaze.Html.Renderer.String as Blaze ( renderHtml )
@@ -327,10 +327,11 @@ pageToWikiPandoc' = applyPreParseTransforms >=>
 -- | Converts source text to Pandoc using default page type.
 pageToPandoc :: Page -> ContentTransformer Pandoc
 pageToPandoc page' = do
+  cfg <- lift getConfig
   modifyContext $ \ctx -> ctx{ ctxTOC = pageTOC page'
                              , ctxCategories = pageCategories page'
                              , ctxMeta = pageMeta page' }
-  return $ readerFor (pageFormat page') (pageLHS page') (pageText page')
+  return $ readerFor cfg (pageFormat page') (pageLHS page') (pageText page')
 
 -- | Converts contents of page file to Page object.
 contentsToPage :: String -> ContentTransformer Page
@@ -362,8 +363,8 @@ pandocToHtml pandocContents = do
                       , writerExtensions = if bird
                                               then Set.insert
                                                    Ext_literate_haskell
-                                                   $ writerExtensions def
-                                              else writerExtensions def
+                                                   $ pandocExtensions cfg
+                                              else pandocExtensions cfg
                       -- note: javascript obfuscation gives problems on preview
                       , writerEmailObfuscation = ReferenceObfuscation
                       } pandocContents
@@ -504,13 +505,13 @@ updateLayout f = do
 -- Pandoc and wiki content conversion support
 --
 
-readerFor :: PageType -> Bool -> String -> Pandoc
-readerFor pt lhs =
+readerFor :: Config -> PageType -> Bool -> String -> Pandoc
+readerFor conf pt lhs =
   let defPS = def{ readerSmart = True
                  , readerExtensions = if lhs
                                          then Set.insert Ext_literate_haskell
-                                              $ readerExtensions def
-                                         else readerExtensions def }
+                                              $ pandocExtensions conf
+                                         else pandocExtensions conf }
   in case pt of
        RST      -> readRST defPS
        Markdown -> readMarkdown defPS

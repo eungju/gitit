@@ -28,9 +28,12 @@ import Control.Monad.State (StateT, runStateT, get, modify)
 import Control.Monad (liftM)
 import System.Log.Logger (Priority(..))
 import Text.Pandoc.Definition (Pandoc)
+import Text.Pandoc.Options (Extension)
 import Text.XHtml (Html)
 import qualified Data.Map as M
 import Data.List (intersect)
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Data.Time (parseTime)
 import System.Locale (defaultTimeLocale)
 import Data.FileStore.Types
@@ -147,7 +150,9 @@ data Config = Config {
   -- | Directory to search for pandoc customizations
   pandocUserData       :: Maybe FilePath,
   -- | Filter HTML through xss-sanitize
-  xssSanitize          :: Bool
+  xssSanitize          :: Bool,
+  -- | Pandoc extensions
+  pandocExtensions     :: Set Extension
   }
 
 -- | Data for rendering a wiki page.

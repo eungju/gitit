@@ -31,6 +31,7 @@ import Network.Gitit.Authentication (formAuthHandlers, rpxAuthHandlers, httpAuth
 import Network.Gitit.Util (parsePageType, readFileUTF8)
 import System.Log.Logger (logM, Priority(..))
 import qualified Data.Map as M
+import qualified Data.Set as Set
 import Data.ConfigFile hiding (readfile)
 import Control.Monad.Error
 import System.Log.Logger ()
@@ -38,7 +39,7 @@ import Data.List (intercalate)
 import Data.Char (toLower, toUpper, isDigit)
 import Paths_gitit (getDataFileName)
 import System.FilePath ((</>))
-import Text.Pandoc hiding (MathML, WebTeX, MathJax)
+import Text.Pandoc hiding (MathML, WebTeX, MathJax, pandocExtensions)
 import qualified Control.Exception as E
 
 forceEither :: Show e => Either e a -> a
@@ -202,6 +203,7 @@ extractConfig cp = do
                                     then Nothing
                                     else Just cfPandocUserData
         , xssSanitize          = cfXssSanitize
+        , pandocExtensions     = Set.insert Ext_autolink_bare_uris $ writerExtensions def
         }
   case config' of
         Left (ParseError e, e') -> error $ "Parse error: " ++ e ++ "\n" ++ e'
